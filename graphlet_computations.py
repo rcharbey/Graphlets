@@ -93,5 +93,10 @@ class RGF(Graphlets_computation):
         result = {}
         for graph in local_frequencies:
             total_graphlets = sum(local_frequencies[graph])            
-            result[graph] = [-math.log(g / float(total_graphlets)) for g in local_frequencies[graph]]
+            result[graph] = []
+            for g in local_frequencies[graph]:
+                if g == 0.0:
+                    result[graph].append(0.0)
+                else:
+                    result[graph].append(-math.log(g / float(total_graphlets)))
         return result

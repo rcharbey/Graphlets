@@ -16,13 +16,13 @@ import sys
 home = os.path.expanduser('~')
 sys.path.append(home + '/Representativite/Scripts')
 from graphlet_computations import Local_frequency, Global_frequency, Representativity
+import random
 
 class kmeans(object):
     def __init__(self, data, graphlets_per_graph, k, nb_classes):
         self.data = pd.DataFrame.from_dict(data, orient = 'index')
-        self.data2 = data
         self.graph_names = list(self.data.index)
-        self.k = k
+        self.k = {6 : 4, 21 : 5}[k]
         self.graphlets_ok = {0 : [], 1 : [], 2 : [1], 3 : [2,3], 4 : range(4, 10), 5 : range(10, 31)}[self.k]
         self.graphlets_per_graph = graphlets_per_graph
         self.global_freq = Global_frequency(self.graphlets_per_graph)
@@ -50,11 +50,39 @@ class kmeans(object):
         self.graphs_per_class = {}
         for i in range(self.nb_classes):
             self.graphs_per_class[i] = []
-        
+            
+        class_per_graph = {}
         for i, graph in enumerate(self.graph_names):
             self.graphs_per_class[kmeans.labels_[i]].append(graph)
+            class_per_graph[graph] = kmeans.labels_[i]
         
-        self.cluster_centers = kmeans.cluster_centers_                      
+        self.cluster_centers = kmeans.cluster_centers_     
+        return class_per_graph
+        
+    def compute_random(self):
+        self.graphs_per_class = {}
+        for i in range(self.nb_classes):
+            self.graphs_per_class[i] = []
+        
+        labels = []
+        for graph in self.graph_names:
+            this_graph_label = random.randint(0, self.nb_classes-1)
+            self.graphs_per_class[this_graph_label].append(graph)
+            labels.append(this_graph_label)
+        
+        return labels
+        
+    def dont_compute(self, labels):
+        list_classes = list(set(labels))
+        self.graphs_per_class = {}
+        for classe in set(labels.values()):
+            self.graphs_per_class[classe] = []
+        
+        for graph in labels:
+            this_graph_label = labels[graph]
+            self.graphs_per_class[this_graph_label].append(graph)
+            
+        return labels
                     
     def write_results(self, folder):
         self.repr_per_classe = {}

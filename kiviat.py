@@ -23,6 +23,7 @@ class kiviat(object):
         self.folder_scripts = home + '/Graphlets/Scripts'
         self.list_graphlets = [10, 13, 12, 11, 15, 14, 18, 19, 20, 16, 17, 21, 
                           22, 26, 23, 24, 25, 27, 28, 29, 30]
+        self.list_graphlets = [4,5,6,7,8,9]
     
 
     def get_data(self):
@@ -40,6 +41,7 @@ class kiviat(object):
             nb_clusters = 0
             for line in csv_r:
                 clusters[nb_clusters] = {
+                    'name' : line[0],
                     'pop' : int(line[1]),
                     'repr' : {
                                 graphlet :
@@ -48,7 +50,7 @@ class kiviat(object):
                     }
                 }
                 nb_clusters += 1
-            
+                
         all_temp = []
         for i in range(nb_clusters):
             for graphlet in self.list_graphlets:
@@ -68,7 +70,7 @@ class kiviat(object):
             to_write.write('//Legend titles \n')
             to_write.write('var LegendOptions = [')
             for i in range(self.nb_clusters):
-                to_write.write('\'%s\'' % (self.data[i]['pop']))
+                to_write.write('\'%s-%s\'' % (self.data[i]['name'], self.data[i]['pop']))
                 if i < self.nb_clusters-1:
                     to_write.write(',')
             to_write.write(']; \n')
@@ -79,17 +81,15 @@ class kiviat(object):
                 cluster = self.data[i]['repr']
                 first_graphlet = 0
                 nb_graphlets = len(cluster)
-                for j in cluster:
-                    if first_graphlet == 0:
-                        first_graphlet = j
-                    if j == len(cluster) + first_graphlet -1:
-                        to_write.write('                {axis:"%s",value:%s}\n' % (self.axes[j-first_graphlet], cluster[j]))
+                for j, graphlet in enumerate(self.list_graphlets):
+                    if j == len(self.list_graphlets)-1:
+                        to_write.write('                {axis:"%s",value:%s}\n' % (self.axes[j], cluster[graphlet]))
                         if i == self.nb_clusters-1:
                             to_write.write(']\n')
                         else:
                             to_write.write('],[\n')
                     else:
-                        to_write.write('                {axis:"%s",value:%s},\n' % (self.axes[j-first_graphlet], cluster[j]))
+                        to_write.write('                {axis:"%s",value:%s},\n' % (self.axes[j], cluster[graphlet]))
     
             to_write.write(' ]; \n')
             to_write.write(' //Options for the Radar chart, other than default\n')
@@ -193,3 +193,7 @@ class kiviat(object):
         self.copy_script_js()
         self.copy_kiviat()
         #self.copy_radar_chart_js()
+        
+        
+if __name__ == '__main__':
+    kiviat('../Random_graphs/SBM_v2/Results/Classes/').plot_kiviat()
