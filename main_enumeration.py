@@ -11,7 +11,6 @@ import csv
 from igraph import Graph
 
 home = path.expanduser('~')
-import sys
 
 from enumeration import Enumerate
 
@@ -36,13 +35,12 @@ with open('%s/graphlets_per_graph.csv' % Results, 'w') as to_write:
     csvw.writerow(['graph'] + ['graphlet_%s' % i for i in range(10,31)])
 
 for gname in os.listdir(Data):
-    print '%s/%s' % (Data, gname)
+    print('%s/%s' % (Data, gname))
     graph = import_graph('%s/%s' % (Data, gname))
     pt, ps = Enumerate(graph, k).characterize_with_patterns()
     with open('%s/graphlets_per_graph.csv' % Results, 'a') as to_write:
         csvw = csv.writer(to_write, delimiter = ';')
         csvw.writerow([gname] + pt[10:])
-    print '     Ok'
 
     with open('%s/Positions/%s.csv' % (Results, gname), 'w') as to_write:
         csvw2 = csv.writer(to_write, delimiter = ';')

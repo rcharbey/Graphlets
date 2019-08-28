@@ -7,32 +7,32 @@ Created on Thu Feb 14 18:51:03 2019
 
 # Scripts adapted from : Copyright (C) 2011  Nicolas P. Rougier
 
-import numpy as np
-import matplotlib
-import matplotlib.path as path
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 import csv
 import os
+import pdfkit
 
 class kiviat(object):
     def __init__(self, folder):
         home = os.path.expanduser('~')
         self.folder = folder
         self.file_in = folder+'/kmeans_stats.csv'
-        self.folder_scripts = home + '/Graphlets/Scripts'
-        self.list_graphlets = [10, 13, 12, 11, 15, 14, 18, 19, 20, 16, 17, 21, 
+        self.folder_scripts = home + '/Projets/Graphlets/Scripts'
+        self.svg_folder = '%s/Projets/Graphlets/SVG' % home
+        
+        self.list_graphlets = {
+                6 : [4,5,6,7,8,9],
+                21 : [10, 13, 12, 11, 15, 14, 18, 19, 20, 16, 17, 21, 
                           22, 26, 23, 24, 25, 27, 28, 29, 30]
-        self.list_graphlets = [4,5,6,7,8,9]
-    
+                }
 
     def get_data(self):
         clusters = {}
-        id_par_cluster = []
                 
         with open(self.file_in, 'r') as to_read:
             csv_r = csv.reader(to_read, delimiter = ';') 
-            header = csv_r.next()
+            header = next(csv_r)
+            
+            self.list_graphlets = self.list_graphlets[len(header) - 2]
                 
             graphlet_pos = {}       
             for graphlet in self.list_graphlets:
@@ -58,7 +58,7 @@ class kiviat(object):
             all_temp.append(clusters[i])
         
         self.nb_clusters = nb_clusters
-        self.axes = [os.path.expanduser('~/PATTERNS/SVG/pattern%s.svg' % graphlet) for graphlet in self.list_graphlets]
+        self.axes = [os.path.expanduser('%s/pattern%s.svg' % (self.svg_folder, graphlet)) for graphlet in self.list_graphlets]
         self.data = all_temp
     
     def copy_script_js(self):
@@ -102,7 +102,7 @@ class kiviat(object):
             to_write.write(' \n')
             to_write.write(' //Call function to draw the Radar chart\n')
             to_write.write(' //Will expect that data is in %\'s\n')
-            to_write.write(' RadarChart.draw("#chart", d, mycfg);\n')
+            to_write.write('RadarChart.draw("#chart", d, mycfg);\n')
     
             to_write.write('////////////////////////////////////////////\n')
             to_write.write('/////////// Initiate legend ////////////////\n')
@@ -144,7 +144,7 @@ class kiviat(object):
             to_write.write('      ;')
             
     def copy_radar_chart_js(self):
-        with open('%s/RadarChart.js' % self.folder, 'w') as to_write:
+        with open('%s/../RadarChart.js' % self.folder, 'w') as to_write:
                 with open(self.folder_scripts + '/RadarChart.js', 'r') as to_read:
                     for line in to_read:
                         to_write.write(line) 
@@ -157,7 +157,7 @@ class kiviat(object):
             to_write.write('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>\n')
             to_write.write('<title>Radar chart</title>\n')
             to_write.write('<script src="http://d3js.org/d3.v3.min.js"></script>\n')
-            to_write.write('	<script src="%s/RadarChart.js"></script>\n' % self.folder_scripts)
+            to_write.write('	<script src="../RadarChart.js"></script>\n')
             to_write.write('	<style>\n')
             to_write.write('		body {\n')
             to_write.write('		  overflow: hidden;\n')
@@ -192,8 +192,14 @@ class kiviat(object):
         self.get_data()
         self.copy_script_js()
         self.copy_kiviat()
-        #self.copy_radar_chart_js()
+        self.copy_radar_chart_js()
+        file_in = self.folder + '/Kiviat.html'
+        file_out = self.folder + '/../Kiviat_%s.pdf' % self.nb_clusters
+        print(file_out)
+        pdfkit.from_url(file_in, file_out)
+        print('ok')
+        
         
         
 if __name__ == '__main__':
-    kiviat('../Random_graphs/SBM_v2/Results/Classes/').plot_kiviat()
+    kiviat('../Classes').plot_kiviat()
